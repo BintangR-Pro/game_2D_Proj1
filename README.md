@@ -53,7 +53,7 @@ Pemain memulai perjalanan sebagai pelatih muda di **Desa Awal**, memilih satu da
 | `0` | `Assets/_Project/Scenes/Scn_Bootstrap.unity` | Inisialisasi layanan tunggal (`GameBootstrap`, `GameServices`, `SceneFlow`, `AudioService`, `DialogueRunner`, `PauseMenu`, `ToastView`) |
 | `1` | `Assets/_Project/Scenes/Scn_Title.unity` | Layar judul beranimasi dengan opsi **Lanjutkan**, **Mulai baru**, dan **Keluar** |
 | `2` | `Assets/_Project/Scenes/Scn_World.unity` | Peta utama `40 × 36` tile (4 layer Tilemap: `TM_Ground`, `TM_Decor`, `TM_Blocking`, `TM_TallGrass`) |
-| `3` | `Assets/_Project/Scenes/Scn_Battle.unity` | Pertarungan *turn-based* (**Serang**, **Jurus**, **Ramuan**, **Lari**) lengkap dengan *hit-stop*, *camera shake*, & evolusi |
+| `3` | `Assets/_Project/Scenes/Scn_Battle.unity` | Pertarungan *turn-based* (**Serang**, **Jurus**, **Ramuan**, **Kabur**) lengkap dengan *hit-stop*, *camera shake*, & evolusi |
 | `4` | `Assets/_Project/Scenes/Scn_End.unity` | Layar penutup **DEMO SELESAI** yang menampilkan partner akhir, waktu bermain, dan kredit mahasiswa |
 | — | `Assets/_Project/Scenes/Sandbox/Scn_Bintang.unity` | Scene *sandbox* pribadi (P1) dengan batas arena, 3 rintangan, NPC statis, dan `MonsterDebugger` |
 
