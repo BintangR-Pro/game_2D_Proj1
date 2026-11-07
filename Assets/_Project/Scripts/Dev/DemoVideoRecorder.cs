@@ -40,6 +40,8 @@ public class DemoVideoRecorder : MonoBehaviour
     private static readonly FieldInfo CooldownField = typeof(WildMonster).GetField("cooldown", BindingFlags.NonPublic | BindingFlags.Instance);
     private static readonly FieldInfo LevelField = typeof(WildMonster).GetField("level", BindingFlags.NonPublic | BindingFlags.Instance);
     private static readonly FieldInfo MessageField = typeof(BattleView).GetField("messageText", BindingFlags.NonPublic | BindingFlags.Instance);
+    private static readonly FieldInfo EnemySkillUsesField = typeof(BattleSystem).GetField("enemySkillUses", BindingFlags.NonPublic | BindingFlags.Instance);
+    private static readonly FieldInfo EnemySkillChanceField = typeof(BattleSystem).GetField("enemySkillChance", BindingFlags.NonPublic | BindingFlags.Instance);
 
     private string outDir;
     private readonly StringBuilder frameList = new StringBuilder();
@@ -200,6 +202,9 @@ public class DemoVideoRecorder : MonoBehaviour
         yield return SkipMessagesUntil(battle, () => !s.Scenes.InBattle, 20f, 0.35f);
         yield return WaitFor(() => !s.Scenes.InBattle && !s.Scenes.IsBusy, 15f, "kembali ke dunia");
 
+        // latihan di luar kamera: Blubi sudah berevolusi dan berlatih -> Finnox Lv 8 (cukup kuat menahan Raijugar)
+        s.Party.SetPartner(new MonsterInstance(s.Database.GetByName("Finnox"), 8));
+
         // 5. Gua Petir yang gelap -> Raijugar mengaum (dua baris)
         CalmAll(40f);
         WildMonster boss = FindObjectsByType<WildMonster>(FindObjectsSortMode.None).FirstOrDefault(w => w.IsBoss);
@@ -219,19 +224,34 @@ public class DemoVideoRecorder : MonoBehaviour
         yield return new WaitForSecondsRealtime(1.0f);
         EndSegment();
 
-        // battle boss (tidak direkam): HP boss dibuat 0 agar demo singkat
+        // 6a. Battle boss: pembuka + satu giliran penuh (Raijugar memakai Setrum Kilat sekali, lalu serangan biasa)
         while (s.Dialogue.IsRunning) { yield return Tap(Key.Enter); yield return new WaitForSecondsRealtime(0.25f); }
         yield return WaitFor(() => s.Scenes.InBattle && FindAnyObjectByType<BattleInstaller>() != null, 8f, "battle boss");
         battle = FindAnyObjectByType<BattleInstaller>();
         WatchBattle(battle);
-        yield return SkipMessagesUntil(battle, () => MenuOpen(battle), 12f, 0.3f, false);
-        battle.Battle.Enemy.TakeDamage(battle.Battle.Enemy.CurrentHP);
-        yield return new WaitForSecondsRealtime(0.2f);
-        yield return Tap(Key.Enter);                                   // Serang
-        yield return SkipMessagesUntil(battle, () => MessageContains(battle, "mulai bersinar"), 25f, 0.3f);
+        EnemySkillUsesField.SetValue(battle.Battle, 1);
+        EnemySkillChanceField.SetValue(battle.Battle, 1f);
+        BeginSegment("boss");
+        yield return ReadBattleUntil(battle, () => MenuOpen(battle), 15f, false);
+        yield return new WaitForSecondsRealtime(1.0f);                 // menu terlihat dulu
+        yield return Tap(Key.RightArrow);                              // Jurus
+        yield return new WaitForSecondsRealtime(0.55f);
+        yield return Tap(Key.Enter);
+        yield return ReadBattleUntil(battle, () => MenuOpen(battle) || battle.Battle.Result != BattleResult.None, 25f, false);
+        yield return new WaitForSecondsRealtime(0.6f);
+        EndSegment();
 
-        // 6. Evolusi Pyrit -> Pyrago
+        // HP Raijugar dibuat tipis (tidak direkam) agar demo singkat; tunggu bar HP turun dulu
+        if (battle.Battle.Result == BattleResult.None)
+        {
+            battle.Battle.Enemy.TakeDamage(Mathf.Max(0, battle.Battle.Enemy.CurrentHP - 4));
+            yield return new WaitForSecondsRealtime(1.5f);
+        }
+
+        // 6b. Serangan penentu -> Raijugar kalah -> naik level -> evolusi Finnox -> Tidalord
         BeginSegment("evolusi");
+        yield return Tap(Key.Enter);                                   // Jurus lagi (pilihan terakhir diingat)
+        yield return ReadBattleUntil(battle, () => MessageContains(battle, "mulai bersinar"), 45f, true);   // serang lagi bila meleset
         yield return WaitBattleTyped();
         yield return new WaitForSecondsRealtime(0.6f);
         yield return Tap(Key.Enter);
